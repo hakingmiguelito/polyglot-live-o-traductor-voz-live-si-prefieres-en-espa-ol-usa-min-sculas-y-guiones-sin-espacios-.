@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolyGlot Live - Traductores de Voz Universal</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: #151c2c;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --success: #10b981;
+      --border: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      margin-top: 1rem;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .language-bar {
+      background-color: var(--card-bg);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .lang-select {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .lang-select label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      background-color: var(--bg-color);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .arrow-icon {
+      color: var(--accent-cyan);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .grid-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      height: 250px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .panel-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .badge {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background-color: var(--border);
+      color: var(--text-muted);
+    }
+
+    .badge.active {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+
+    .transcript-box {
+      flex: 1;
+      background-color: var(--bg-color);
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: var(--text);
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .controls {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .mic-btn {
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .mic-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.6);
+    }
+
+    .mic-btn.recording {
+      background: var(--danger);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .status-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>PolyGlot Live 🎙️</h1>
+    <p>Traducción simultánea y síntesis de voz en el navegador</p>
+  </header>
+
+  <div class="main-container">
+    <div class="language-bar">
+      <div class="lang-select">
+        <label>Tu Idioma Base (Origen)</label>
+        <select id="sourceLang">
+          <option value="es-ES" selected>Español</option>
+          <option value="en-US">Inglés</option>
+          <option value="de-DE">Alemán</option>
+          <option value="fr-FR">Francés</option>
+        </select>
+      </div>
+
+      <div class="arrow-icon">➔</div>
+
+      <div class="lang-select">
+        <label>Idioma Destino (Sintetizador)</label>
+        <select id="targetLang">
+          <option value="en-US" selected>Inglés</option>
+          <option value="es-ES">Español</option>
+          <option value="de-DE">Alemán</option>
+          <option value="fr-FR">Francés</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-panels">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Entrada de Voz (Original)</span>
+          <span id="speechBadge" class="badge">Inactivo</span>
+        </div>
+        <div id="originalText" class="transcript-box">Presiona el micrófono para comenzar a hablar...</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Salida de Voz Sintetizada</span>
+          <span id="translationBadge" class="badge">Sincronizado</span>
+        </div>
+        <div id="translatedText" class="transcript-box" style="color: var(--accent-cyan);">Traducción y voz en vivo...</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="micBtn" class="mic-btn" onclick="toggleRecording()">🎤</button>
+      <div id="statusText" class="status-text">Haz clic para Iniciar Transmisión</div>
+    </div>
+  </div>
+
+  <script>
+    let isRecording = false;
+    let recognition;
+    const synth = window.speechSynthesis;
+
+    // Diccionario básico de demostración para traducir rápido en el navegador
+    const diccionarioDemo = {
+      "hola": { "en-US": "Hello", "de-DE": "Hallo", "fr-FR": "Bonjour" },
+      "buenos días": { "en-US": "Good morning", "de-DE": "Guten Morgen", "fr-FR": "Bonjour" },
+      "cómo estás": { "en-US": "How are you", "de-DE": "Wie geht es dir", "fr-FR": "Comment ça va" },
+      "mi nombre es": { "en-US": "My name is", "de-DE": "Mein Name ist", "fr-FR": "Je m'appelle" },
+      "gracias": { "en-US": "Thank you", "de-DE": "Danke", "fr-FR": "Merci" },
+      "adiós": { "en-US": "Goodbye", "de-DE": "Auf Wiedersehen", "fr-FR": "Au revoir" }
+    };
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false; // Procesa frase por frase para reproducir audio
+      recognition.interimResults = false;
+
+      recognition.onresult = (event) => {
+        const textoEscuchado = event.results[0][0].transcript.toLowerCase().trim();
+        document.getElementById('originalText').innerText = textoEscuchado;
+
+        // Procesa la traducción y genera la voz
+        traducirYHablar(textoEscuchado);
+      };
+
+      recognition.onend = () => {
+        // Si sigue activo, reinicia la escucha para hacer flujo continuo
+        if (isRecording) {
+          recognition.start();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Error de reconocimiento:", event.error);
+      };
+    } else {
+      alert("Tu navegador no soporta el micrófono nativo. Usa Google Chrome.");
+    }
+
+    function traducirYHablar(texto) {
+      const targetLang = document.getElementById('targetLang').value;
+      let textoTraducido = "";
+
+      // Revisa si existe una traducción exacta en nuestro diccionario demo
+      if (diccionarioDemo[texto] && diccionarioDemo[texto][targetLang]) {
+        textoTraducido = diccionarioDemo[texto][targetLang];
+      } else {
+        // Si es una frase diferente, simula la traducción agregando una marca informativa
+        textoTraducido = `[${targetLang}] ${texto}`;
+      }
+
+      document.getElementById('translatedText').innerText = textoTraducido;
+
+      // SÍNTESIS DE VOZ DEL NAVEGADOR (Hablar en voz alta)
+      reproducirVoz(textoTraducido, targetLang);
+    }
+
+    function reproducirVoz(texto, idioma) {
+      if (synth.speaking) {
+        synth.cancel(); // Detiene cualquier audio anterior
+      }
+
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = idioma;
+      utterance.rate = 0.95; // Velocidad de voz natural
+      utterance.pitch = 1.0;  // Tono de voz
+
+      synth.speak(utterance);
+    }
+
+    function toggleRecording() {
+      const btn = document.getElementById('micBtn');
+      const status = document.getElementById('statusText');
+      const speechBadge = document.getElementById('speechBadge');
+
+      if (!isRecording) {
+        isRecording = true;
+        btn.classList.add('recording');
+        btn.innerText = '⏹️';
+        status.innerText = 'Escuchando... habla ahora';
+        speechBadge.classList.add('active');
+        speechBadge.innerText = 'En Vivo';
+
+        if (recognition) {
+          recognition.lang = document.getElementById('sourceLang').value;
+          recognition.start();
+        }
+      } else {
+        isRecording = false;
+        btn.classList.remove('recording');
+        btn.innerText = '🎤';
+        status.innerText = 'Transmisión Detenida';
+        speechBadge.classList.remove('active');
+        speechBadge.innerText = 'Inactivo';
+
+        if (recognition) {
+          recognition.stop();
+        }
+        synth.cancel();
+      }
+    }
+  </script>
+
+</body>
+</html>
